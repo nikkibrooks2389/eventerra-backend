@@ -1,7 +1,7 @@
 require('dotenv').config();
 const { MongoClient } = require('mongodb');
 
-const uri = 'mongodb+srv://nbrooks2389:Alyssa1989!.@cluster0.p2pzvdf.mongodb.net/';
+const uri = process.env.MONGODB_URI;
 
 const client = new MongoClient(uri);
 
@@ -16,4 +16,8 @@ const connectDB = async () => {
     }
 };
 
-module.exports = { connectDB };
+const getDb = () => {
+    return client.db();
+};
+
+module.exports = { connectDB, getDb };

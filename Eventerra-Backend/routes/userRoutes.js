@@ -1,6 +1,6 @@
 const express = require('express');
-const { createUser } = require('../models/userModel');
-const { authenticate } = require('../services/authService');
+const { createUser } = require('./../models/userModel');
+const { authenticate } = require('./../services/authService');
 const router = express.Router();
 
 // User registration

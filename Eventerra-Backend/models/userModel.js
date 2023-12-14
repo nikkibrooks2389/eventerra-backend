@@ -1,9 +1,13 @@
-const { getDb } = require('../config/db');
+const { getDb } = require('./../config/db');
 const bcrypt = require('bcrypt');
 
 async function createUser(user) {
+    console.log("HERE?", getDb())
     const db = getDb();
+    console.log(db)
+    console.log(user)
     user.password = await bcrypt.hash(user.password, 10); // Hashing the password
+
     await db.collection('users').insertOne(user);
 }
 

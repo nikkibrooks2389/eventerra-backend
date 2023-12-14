@@ -13,8 +13,6 @@ async function authenticate(email, password) {
     return token;
 }
 
-
-
 async function generatePasswordResetToken(email) {
     // Generate a token (e.g., a random string or JWT)
     // Save the token in the user's record in the database with an expiration time
