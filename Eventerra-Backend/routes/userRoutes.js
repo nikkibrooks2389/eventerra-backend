@@ -1,15 +1,51 @@
 const express = require('express');
-const { createUser } = require('./../models/userModel');
-const { authenticate } = require('./../services/authService');
 const router = express.Router();
+const { body, validationResult } = require('express-validator');
+const bcrypt = require('bcrypt');
+const userModel = require('./../models/userModel');
+const validationErrorMiddleware = require('../middleware/validationErrorMiddleware');
 
-// User registration
-router.post('/register', async (req, res) => {
+// Validation middleware for user registration
+const registrationValidation = [
+    body('fullName').notEmpty().withMessage('Full Name is required'),
+    body('email').isEmail().withMessage('Invalid email format'),
+    body('password')
+        .custom((value, { req }) => {
+            if (value.length < 8) {
+                throw new Error('Password must be at least 8 characters long');
+            }
+            if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(value)) {
+                throw new Error('Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character');
+            }
+            return true;
+        })
+];
+
+// User registration route with validation middleware
+router.post('/register', registrationValidation, validationErrorMiddleware, async (req, res, next) => {
+    const { fullName, email, password } = req.body;
+
     try {
-        await createUser(req.body);
-        res.status(201).send('User created');
+        // Check if the email is already registered
+        const existingUser = await userModel.findUserByEmail(email);
+
+        if (existingUser) {
+            return res.status(400).send('Email is already registered');
+        }
+
+        // If email is not registered, proceed with user registration
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = {
+            fullName,
+            email,
+            password: hashedPassword,
+            created_date: new Date(),
+        };
+
+        await userModel.createUser(newUser);
+        res.status(201).send('User registered successfully');
     } catch (error) {
-        res.status(500).send(error.message);
+        next(error);
     }
 });
 
@@ -50,5 +86,7 @@ router.post('/reset-password', async (req, res) => {
         res.status(500).send(error.message);
     }
 });
+
+
 
 module.exports = router;
